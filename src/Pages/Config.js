@@ -2,23 +2,23 @@
 import React, { Component } from "react";
 import Bucket from "../Components/Bucket";
 import BucketItem from "../Components/BucketItem";
-import Storage from "../Util/storage";
-import { Button, Spinner, Form } from "react-bootstrap";
+import * as storage from "../Util/storage";
+import { Button, Spinner, Popover, OverlayTrigger } from "react-bootstrap";
+import { InfoCircle } from "react-bootstrap-icons";
 import Switch from "react-switch";
-import utils from "../Util/utils";
+import * as utils from "../Util/utils";
 import { defaultBucket } from "../Util/defaults";
 
 export class Config extends Component {
   constructor() {
     super();
-    
     this.state = {
       options: undefined,
       buckets: undefined,
     };
     chrome.storage.onChanged.addListener(async (changes) => {
       if (changes["buckets"]) {
-        this.setState({ buckets: await Storage.getBuckets() });
+        this.setState({ buckets: await storage.getBuckets() });
       }
       if (changes["options"] && "newValue" in changes["options"]) {
         this.setState({ options: changes["options"].newValue });
@@ -31,34 +31,34 @@ export class Config extends Component {
   toggleSpontaneousCombustion = (checked) => {
     let options = this.state.options;
     options["spontaneousCombustion"] = checked;
-    Storage.save("options", options);
+    storage.save("options", options);
   };
 
   retrieveBuckets = async () => {
-    const buckets = await Storage.getBuckets();
+    const buckets = await storage.getBuckets();
     this.setState({ buckets: buckets });
   };
 
   retrieveOptions = async () => {
-    const options = await Storage.getOptions();
+    const options = await storage.getOptions();
     this.setState({ options: options });
   };
 
   handleBucketEdit = (bucketId, key, newValue) => {
     let updatedBuckets = this.state.buckets;
     updatedBuckets[bucketId][key] = newValue;
-    Storage.save("buckets", updatedBuckets);
+    storage.save("buckets", updatedBuckets);
   };
 
   removeBucket = async (id) => {
     let buckets = this.state.buckets;
-    let storedSites = await Storage.getSites();
+    let storedSites = await storage.getSites();
     for (const site of buckets[id].bucketSites) {
       delete storedSites[site];
     }
     delete buckets[id];
-    Storage.save("buckets", buckets);
-    Storage.save("sites", storedSites);
+    storage.save("buckets", buckets);
+    storage.save("sites", storedSites);
   };
 
   addBucket = () => {
@@ -70,7 +70,7 @@ export class Config extends Component {
     } else {
       bucketId = Number(bucketKeys.pop()) + 1;
     }
-    Storage.save("buckets", {
+    storage.save("buckets", {
       ...this.state.buckets,
       [bucketId]: defaultBucket,
     });
@@ -88,7 +88,7 @@ export class Config extends Component {
       <div className="wh100">
         {bucketIds.map((id) => {
           const bucket = this.state.buckets[id];
-          console.log(bucket, this.state.buckets[id], id, this.state.buckets)
+          console.log(bucket, this.state.buckets[id], id, this.state.buckets);
           return (
             <Bucket
               key={id}
@@ -137,6 +137,15 @@ export class Config extends Component {
       justifyContent: "flex-start",
       alignItems: "center",
     };
+    const popover = (
+      <Popover id="popover-basic">
+        <Popover.Title as="h3">Popover Top</Popover.Title>
+        <Popover.Content>
+          And here's some <strong>amazing</strong> content. It's very engaging.
+          right?
+        </Popover.Content>
+      </Popover>
+    );
     return (
       <div className="px-3 wh100" style={home}>
         <div
@@ -148,6 +157,11 @@ export class Config extends Component {
           }}
         >
           <h1 style={header}>Buckets</h1>
+
+          <OverlayTrigger trigger="hover" placement="top" overlay={popover}>
+                       <InfoCircle />
+          </OverlayTrigger>
+
           <Button style={{ height: "40px" }} onClick={this.addBucket}>
             Add Bucket
           </Button>

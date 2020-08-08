@@ -1,22 +1,32 @@
 import React, { Component } from "react";
-import { Button } from "react-bootstrap";
-
+import { Button, Spinner } from "react-bootstrap";
+import * as utils from "../Util/utils";
 export class Home extends Component {
   constructor() {
     super();
     this.state = {
+      loading: true,
       good: false,
+      nuked: false,
     };
+    utils.getOpenWatchedSites().then((sites) => {
+      if (sites.length === 0) {
+        this.setState({ good: true });
+      }
+      this.setState({ loading: false });
+    });
   }
 
   handleNuke = () => {
-    this.setState({good: true})
-  }
+    this.setState({ good: true, nuked: true });
+    utils.removeAllWatchedSites();
+  };
 
   handleBlackout = () => {
-    this.setState({good: false})
+    this.setState({ nuked: true });
 
-  }
+    utils.lockAllWatchedSites();
+  };
   bad = () => {
     return (
       <React.Fragment>
@@ -27,10 +37,20 @@ export class Home extends Component {
           draggable="false"
           style={{ height: "100px" }}
         />
-        <p style={{ color: "#4281a4", margin: 0 }}>BIG BROTHER IS WATCHING YOU</p>
-        <p style={{ color: "#4281a4", margin: 0, fontSize: "20px" }}>...and he's dissapointed.</p>
+        <p style={{ color: "#4281a4", margin: 0 }}>
+          BIG BROTHER IS WATCHING YOU
+        </p>
+        <p style={{ color: "#4281a4", margin: 0, fontSize: "20px" }}>
+          ...and he's dissapointed.
+        </p>
 
-        <Button className="mt-4" variant="danger" size="lg" onClick={this.handleNuke} block>
+        <Button
+          className="mt-4"
+          variant="danger"
+          size="lg"
+          onClick={this.handleNuke}
+          block
+        >
           Nuke All Bad Tabs
         </Button>
       </React.Fragment>
@@ -38,24 +58,40 @@ export class Home extends Component {
   };
 
   good = () => {
+    console.log(this.state.nuked);
     return (
-        <React.Fragment>
-          <img
-            className="mb-3"
-            src={require("../Resources/greensmiley.png")}
-            alt=""
-            draggable="false"
-            style={{ height: "100px" }}
-          />
-          <p style={{ color: "#4281a4", margin: 0 }}>BIG BROTHER IS WATCHING YOU</p>
-          <p style={{ color: "#4281a4", margin: 0, fontSize: "20px"}}>...and he wants you to click the button.</p>
+      <React.Fragment>
+        <img
+          className="mb-3"
+          src={require("../Resources/greensmiley.png")}
+          alt=""
+          draggable="false"
+          style={{ height: "100px" }}
+        />
+        <p style={{ color: "#4281a4", margin: 0 }}>
+          BIG BROTHER IS WATCHING YOU
+        </p>
+        <p style={{ color: "#4281a4", margin: 0, fontSize: "20px" }}>
+          {this.state.nuked
+            ? "...and he's so proud!"
+            : "...and he wants you to click the button."}
+        </p>
 
-          <Button className="mt-4" variant="success" size="lg" onClick={this.handleBlackout} block>
-            Execute Preemptive Strike: Total Blackout
-          </Button>
-        </React.Fragment>
-      );
-  }
+        <Button
+          className="mt-4"
+          variant="success"
+          size="lg"
+          onClick={this.handleBlackout}
+          disabled={this.state.nuked}
+          block
+        >
+          {this.state.nuked
+            ? "Operation complete. All sites locked."
+            : "Execute Preemptive Strike: Total Blackout"}
+        </Button>
+      </React.Fragment>
+    );
+  };
   render() {
     const home = {
       display: "flex",
@@ -78,7 +114,13 @@ export class Home extends Component {
       <div className="px-3 wh100" style={home}>
         <p style={header}>Time Warden </p>
         <div className="mt-3" style={container}>
-          {this.state.good ? this.good() : this.bad()}
+          {this.state.loading ? (
+            <Spinner animation="border" role="status" />
+          ) : this.state.good ? (
+            this.good()
+          ) : (
+            this.bad()
+          )}
         </div>
       </div>
     );

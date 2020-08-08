@@ -1,66 +1,33 @@
-/*global chrome location*/
-const { default: utils } = require("../src/Util/utils");
-const { default: storage } = require("../src/Util/storage");
-function numOpenTabsInBucket(id) {
+/*global chrome*/
+import * as utils from "../src/Util/utils";
+import * as storage from "../src/Util/storage";
+
+//Date object representing the start of the current session
+//A session is a period of time where the tab is visible, denoted by sessionStart and sessionEnd
+//sessionStart is undefined between sessions (e.g. when another tab is focused)
+let sessionStart;
+//URL of the site
+const site = utils.getSiteName(window.location.href);
+
+/**
+ * wrapper for utils.isLastOpenTabInBucket, which can't be directly used since
+ * chrome.tabs can't be accessed in a content script
+ *
+ * @param {Number} bucketID
+ */
+function isLastOpenTabInBucket(bucketID) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
-      { query: "numOpenTabs", bucketId: id },
-      (response) => {
-        resolve(response);
-      }
+      { query: "isLastOpenTabInBucket", bucketID: bucketID },
+      (response) => resolve(response)
     );
   });
 }
 
-let sessionStart;
-const url = utils.urlStemmer(location.href);
-
-
-function trackTimeSpentOnSite() {
-  sessionStart = new Date();
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible") {
-      sessionStart = new Date();
-    } else {
-      utils.endTrackerSession(sessionStart, url);
-      sessionStart = undefined
-    }
-  });
-}
-//assume site exists and is watched
-async function addOverlay() {
-  trackTimeSpentOnSite();
-  const site = await utils.getSite(url);
-  if (site == null) {
-    return
-  }
-  console.log(url, site)
-  const bucket = await utils.getBucketFromUrl(url);
-  let percentFaded = bucket.percentFaded;
-  console.log("%faded", percentFaded);
-
-  const { decay, regen, lastActive } = bucket;
-  //calculates regenerated time
-  const minutesSinceLastActive = (Date.now() - lastActive) / (1000 * 60);
-  if ((await numOpenTabsInBucket(site.bucketId)) === 1) {
-    const percentRegenerated = Math.round(
-      (minutesSinceLastActive / regen) * 100
-    );
-    percentFaded = Math.max(0, percentFaded - percentRegenerated);
-    await utils.updateBucket(site.bucketId, "percentFaded", percentFaded);
-    console.log(
-      "lastActive",
-      minutesSinceLastActive,
-      "%regen",
-      percentRegenerated
-    );
-  }
-
-  //rate at which the opacity is updated (in ms)
-  const tickFrequency = 3000;
-  const decayPerTick = (tickFrequency / (1000 * 60) / decay) * 100;
-  console.log(decay, decayPerTick);
-
+/**
+ * Adds the overlay div to the page's html
+ */
+function attachOverlay() {
   let overlay = document.createElement("div");
   overlay.id = "tint";
   const css = {
@@ -76,33 +43,89 @@ async function addOverlay() {
     pointerEvents: "none" /* so we can click through it */,
   };
   Object.assign(overlay.style, css);
-  if (document.getElementById("tint") != null) {
-    return;
-  }
+  //Prevents content script from attaching twice (in theory this check is not necessary)
+  if (document.getElementById("tint") != null) throw Error;
   document.body.appendChild(overlay);
+}
+
+/**
+ * Sets everything up
+ */
+async function setup() {
+  const bucketID = await utils.getBucketID(site);
+  // catches a strange case where addOverlay() activates when the extension is clicked on
+  if (bucketID == null || site == null) return;
+  sessionStart = new Date();
+  const bucket = await utils.getBucket(bucketID);
+  const { decay, regen, lastActive } = bucket;
+  let percentFaded = bucket.percentFaded;
+  if (await isLastOpenTabInBucket(bucketID)) {
+    //there are no other tabs open that are in the same bucket as this tab
+    //unfades tab based on away time
+    const minutesSinceLastActive = (Date.now() - lastActive) / (1000 * 60);
+    const percentRegenerated = (minutesSinceLastActive / regen) * 100;
+    percentFaded = Math.max(0, percentFaded - percentRegenerated);
+    await utils.updateBucket(bucketID, "percentFaded", percentFaded);
+  }
+  attachOverlay();
+  //rate at which the opacity is updated (in ms)
+  const tickFrequency = 1000;
+  const decayPerTick = (tickFrequency / (1000 * 60) / decay) * 100;
+  //needed for the initial transition effect
+  setTimeout(() => {
+    document.getElementById("tint").style.opacity = percentFaded / 100;
+  }, 0);
+
+  //if the spontaneous combustion option is on, chooses a percentFaded to close the tab at
+  const shouldCombust = (await storage.getOptions()).spontaneousCombustion;
+  const chanceOfCombustion = 0.5;
+  let decayToCombustAt;
+  if (shouldCombust && Math.random() < chanceOfCombustion) {
+    decayToCombustAt = Math.random() * (100 - percentFaded) + percentFaded;
+  } else {
+    decayToCombustAt = undefined;
+  }
+  console.log(shouldCombust, chanceOfCombustion, decayToCombustAt, Math.random())
   const tick = async () => {
-    let storedPercentFaded = await utils.getBucketFromId(site.bucketId);
-    storedPercentFaded = storedPercentFaded.percentFaded;
-    if (document.visibilityState === "visible") {
-      percentFaded = storedPercentFaded + decayPerTick;
-      console.log(percentFaded);
-      utils.updateBucket(site.bucketId, "percentFaded", percentFaded);
-      document.getElementById("tint").style.opacity = percentFaded / 100;
-    }
-    if (percentFaded >= 100) {
+    //always syncs with storage on each tick
+    //when multiple tabs from the same bucket are open, you might lose a tick here and there
+    let storedPercentFaded = (await utils.getBucket(bucketID)).percentFaded;
+    percentFaded = storedPercentFaded + decayPerTick;
+    if (percentFaded > 100) {
       percentFaded = 100;
       clearInterval(ticker);
     }
+    if (decayToCombustAt != null && percentFaded > decayToCombustAt) {
+      chrome.runtime.sendMessage({query: "close"})
+    }
+    utils.updateBucket(bucketID, "percentFaded", percentFaded);
+    document.getElementById("tint").style.opacity = percentFaded / 100;
+    console.log(percentFaded);
   };
-  setTimeout(tick, 30);
-  const ticker = setInterval(tick, tickFrequency);
+  let ticker = setInterval(tick, tickFrequency);
+
+  document.addEventListener("visibilitychange", function () {
+    //removes the ticker when the tab is not active and reattaches it when it becomes active
+    //probably an unnecessary optimization (alternative: check visibility on each tick)
+    if (document.visibilityState === "visible") {
+      ticker = setInterval(tick, tickFrequency);
+      sessionStart = new Date();
+    } else {
+      clearInterval(ticker);
+      utils.endSession(sessionStart, site);
+      sessionStart = undefined;
+    }
+  });
 
   window.onbeforeunload = () => {
-    chrome.runtime.sendMessage({ query: "cleanup", bucketId: site.bucketId, siteURL: url, sessionStart: sessionStart });
-    return undefined;
+    //offloads cleanup code to background script
+    chrome.runtime.sendMessage({
+      query: "cleanup",
+      bucketID: bucketID,
+      site: site,
+      sessionStart: sessionStart.toJSON(),
+    });
   };
 }
-addOverlay();
 
-//whenever endSession() is called, do a check to update timeSinceLastActive stamps
-//to enforce regen: 1) when possibly using regen, check if there's any tabs in bucket and 2) only update lastActive if this is the last tab in the bucket
+setup();

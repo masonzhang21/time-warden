@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import Utils from "../Util/utils";
+import * as utils from "../Util/utils";
 import { Accordion, Card, InputGroup } from "react-bootstrap";
 import BucketItem from "./BucketItem";
-import Storage from "../Util/storage";
+import * as storage from "../Util/storage";
 export class Bucket extends Component {
   constructor(props) {
     super(props);
@@ -15,7 +15,6 @@ export class Bucket extends Component {
       regenInput: "",
       addSiteInput: "",
     };
-    Storage.getTimes().then(console.log)
   }
   edit(key, value) {
     this.props.handleChange(this.props.id, key, value);
@@ -43,13 +42,13 @@ export class Bucket extends Component {
 
   addSite = async (e) => {
     e.preventDefault();
-    const sites = await Storage.getSites();
-    const potentialSiteURL = Utils.urlStemmer(this.state.addSiteInput);
-    if (!(potentialSiteURL in sites)) {
-      this.edit("bucketSites", this.props.data.bucketSites.concat(potentialSiteURL));
-      Storage.save("sites", {
+    const sites = await storage.getSites();
+    const potentialSite = utils.getSiteName(this.state.addSiteInput);
+    if (!(potentialSite in sites)) {
+      this.edit("bucketSites", this.props.data.bucketSites.concat(potentialSite));
+      storage.save("sites", {
         ...sites,
-        [potentialSiteURL]: { bucketId: this.props.id, timeSpent: 0, lastUpdated: new Date().toJSON()},
+        [potentialSite]: this.props.id,
       });
       this.setState({ addSiteInput: "" });
     } else {
@@ -58,13 +57,13 @@ export class Bucket extends Component {
   };
 
   removeSite = async (siteToRemove) => {
-    const watchedSites = await Storage.getSites();
+    const watchedSites = await storage.getSites();
     delete watchedSites[siteToRemove];
     const updatedBucketSites = this.props.data.bucketSites.filter(
       (i) => i !== siteToRemove
     );
     this.edit("bucketSites", updatedBucketSites);
-    Storage.save("sites", watchedSites);
+    storage.save("sites", watchedSites);
   };
 
   render() {
