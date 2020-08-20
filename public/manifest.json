@@ -14,7 +14,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "storage", "tabs", "webNavigation", "http://*/", "https://*/"
+    "storage", "tabs", "webNavigation", "activeTab"
   ],
   "icons": { 
     "16": "logo16.png",

@@ -28,7 +28,7 @@ chrome.webNavigation.onCompleted.addListener(async function (details) {
   const isMainTab = details.frameId === 0 && details.parentFrameId === -1;
   const isWatchedSite = await functions.isWatchedSite(details.url);
   if (isMainTab && isWatchedSite) {
-    chrome.tabs.executeScript(details.tabId, {
+    chrome.tabs.executeScript({
       file: "content-script.js",
     });
     chrome.browserAction.setBadgeText({ text: "BAD" });

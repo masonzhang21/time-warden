@@ -86,6 +86,7 @@ async function setup() {
     decayToCombustAt = undefined;
   }
   const tick = async () => {
+    console.log(percentFaded)
     //always syncs with storage on each tick
     //when multiple tabs from the same bucket are open, you might lose a tick here and there
     let storedPercentFaded = (await functions.getBucket(bucketID)).percentFaded;
