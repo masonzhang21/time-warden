@@ -1,26 +1,48 @@
 import React, { Component } from "react";
-import * as utils from "../Util/utils";
-import { Accordion, Card, InputGroup } from "react-bootstrap";
+import * as functions from "../Utils/functions";
+import { Accordion, Card } from "react-bootstrap";
 import BucketItem from "./BucketItem";
-import * as storage from "../Util/storage";
+import * as storage from "../Utils/storage";
+import GradientLabel from "./GradientLabel";
+import AddSite from "./AddSite";
+import {
+  ArrowBarDown,
+  ArrowBarUp,
+  Check2,
+  PencilSquare,
+  TrashFill,
+  XCircleFill,
+} from "react-bootstrap-icons";
+
+/**
+ * Component displaying a bucket
+ */
 export class Bucket extends Component {
   constructor(props) {
     super(props);
-    this.myRef = React.createRef();
     this.state = {
       editMode: false,
       collapsed: true,
       nameInput: "",
       decayInput: "",
       regenInput: "",
-      addSiteInput: "",
     };
   }
+
+  /**
+   * Changes a property
+   * @param {String} key The property to change
+   * @param {String} value The new value of the property
+   */
   edit(key, value) {
-    this.props.handleChange(this.props.id, key, value);
+    this.props.handleEdit(this.props.id, key, value);
   }
 
+  /**
+   * Called when the check mark is pressed. Validatews and saves the edits made.
+   */
   saveEdits() {
+    //makes sure a number between 1 and 999 is entered
     const validateNum = (num) =>
       !isNaN(num) && num !== "" && num > 0 && num <= 999;
 
@@ -33,6 +55,7 @@ export class Bucket extends Component {
     if (this.state.nameInput !== "") {
       this.edit("name", this.state.nameInput);
     }
+    //resets the tentative edit fields
     this.setState({
       nameInput: "",
       decayInput: "",
@@ -40,27 +63,43 @@ export class Bucket extends Component {
     });
   }
 
-  addSite = async (e) => {
-    e.preventDefault();
-    const sites = await storage.getSites();
-    const potentialSite = utils.getSiteName(this.state.addSiteInput);
-    if (!(potentialSite in sites)) {
-      this.edit("bucketSites", this.props.data.bucketSites.concat(potentialSite));
+  /**
+   * Validates and adds a site to the bucket
+   * @param {*} e
+   */
+  addSite = async (event) => {
+    event.preventDefault();
+    this.setState({ validated: true });
+    if (!event.currentTarget.checkValidity()) return;
+    const watchedSites = await storage.getSites();
+    const potentialSite = functions.getSiteName(
+      "https://" + this.state.addSiteInput
+    );
+    console.log(potentialSite);
+    if (!(potentialSite in watchedSites)) {
+      this.edit(
+        "bucketSites",
+        this.props.data.bucketSites.concat(potentialSite)
+      );
       storage.save("sites", {
-        ...sites,
+        ...watchedSites,
         [potentialSite]: this.props.id,
       });
       this.setState({ addSiteInput: "" });
     } else {
-      //TO-DO: Display validation error
+      this.setState({ siteAlreadyInBucketError: true });
     }
   };
 
+  /**
+   * Removes a site from the bucket
+   * @param {*} siteToRemove
+   */
   removeSite = async (siteToRemove) => {
     const watchedSites = await storage.getSites();
     delete watchedSites[siteToRemove];
     const updatedBucketSites = this.props.data.bucketSites.filter(
-      (i) => i !== siteToRemove
+      (site) => site !== siteToRemove
     );
     this.edit("bucketSites", updatedBucketSites);
     storage.save("sites", watchedSites);
@@ -71,7 +110,7 @@ export class Bucket extends Component {
       display: "flex",
       flexDirection: "row",
       justifyContent: "space-between",
-      alignItems: "bottom",
+      alignItems: "center",
       height: "30px",
     };
 
@@ -79,190 +118,165 @@ export class Bucket extends Component {
       padding: 0,
       height: "100%",
       border: 0,
-    };
-    const setting = {
-      display: "flex",
-      alignItems: "center",
-      backgroundImage: "linear-gradient(to right, #4f5d75, #ef8354)",
-    };
-    const settingName = {
-      margin: 0,
-      padding: 0,
-      fontSize: "14px",
-    };
-    const settingInput = {
-      border: this.state.editMode ? "1px solid gray" : 0,
-      borderRadius: 0,
-      margin: 0,
-      padding: 0,
-      fontSize: this.state.editMode ? "12px" : "24px",
-      height: "36px",
-      width: "55px",
-      background: !this.state.editMode && "transparent",
+      background: "transparent",
     };
 
-    const generateIconElement = (src, onClick) => (
-      <input
-        className="mx-2"
-        type="image"
-        src={src}
-        alt=""
-        draggable="false"
-        style={button}
-        onClick={onClick}
-      />
-    );
-    const collapseButton = generateIconElement(
-      this.state.collapsed
-        ? require("../Resources/downarrow.png")
-        : require("../Resources/uparrow.png"),
-      () => this.setState({ collapsed: !this.state.collapsed })
-    );
-    const editButton = generateIconElement(
-      require("../Resources/edit.svg"),
-      () => this.setState({ editMode: true })
-    );
-    const saveEditsButton = generateIconElement(
-      require("../Resources/check.png"),
-      () => {
-        this.saveEdits();
-        this.setState({ editMode: false });
-      }
-    );
-    const deleteEditsButton = generateIconElement(
-      require("../Resources/remove.png"),
-      () => this.setState({ editMode: false })
-    );
-    const removeButton = generateIconElement(
-      require("../Resources/remove.png"),
-      () => this.props.handleRemoval(this.props.id)
-    );
-    const sites = this.props.data.bucketSites.map((site) => (
-      <BucketItem
-        key={site}
-        site={site}
-        showRemove={this.state.editMode}
-        handleRemoval={this.removeSite}
-      />
-    ));
+    const invisibleButtonWrapper = {
+      border: 0,
+      margin: 0,
+      padding: 0,
+      backgroundColor: "transparent",
+    };
+
+    const nameInput = {
+      border: "1px solid gray",
+      fontSize: "20px",
+      height: "36px",
+      width: "250px",
+      borderRadius: "5px",
+    };
+    const settingInput = {
+      border: "1px solid gray",
+      fontSize: "12px",
+      height: "36px",
+      width: "110px",
+      borderRadius: "5px",
+    };
+
     return (
-      <div>
-        <Accordion>
-          <Card>
-            <Card.Header>
-              <div style={bucket}>
+      <Accordion>
+        <Card>
+          <Card.Header>
+            <div style={bucket}>
+              {this.state.editMode ? (
                 <input
-                  style={{
-                    ...settingInput,
-                    fontSize: this.state.editMode ? "20px" : "28px",
-                    width: "250px",
-                  }}
-                  placeholder={this.state.editMode ? "Bucket Name" : undefined}
-                  value={
-                    this.state.editMode
-                      ? this.state.nameInput
-                      : this.props.data.name
-                  }
+                  style={nameInput}
+                  placeholder="Bucket Name"
+                  value={this.state.nameInput}
                   onChange={(e) => this.setState({ nameInput: e.target.value })}
-                  disabled={!this.state.editMode}
                   type="text"
                 />
-                <div style={{ height: "100%", display: "flex" }}>
-                  <Accordion.Toggle
-                    eventKey="0"
-                    style={{ ...button, background: "transparent" }}
-                  >
-                    {collapseButton}
-                  </Accordion.Toggle>
-                  {this.state.editMode ? saveEditsButton : editButton}
-                  {this.state.editMode ? deleteEditsButton : removeButton}
-                </div>
+              ) : (
+                <h1 style={{ fontSize: "28px" }}>{this.props.data.name}</h1>
+              )}
+              <div style={{ display: "flex", fontSize: "26px" }}>
+                <Accordion.Toggle eventKey="0" style={button}>
+                  {this.state.collapsed ? (
+                    <ArrowBarDown
+                      onClick={() =>
+                        this.setState({ collapsed: !this.state.collapsed })
+                      }
+                    />
+                  ) : (
+                    <ArrowBarUp
+                      onClick={() =>
+                        this.setState({ collapsed: !this.state.collapsed })
+                      }
+                    />
+                  )}
+                </Accordion.Toggle>
+                <button className="mx-2" style={invisibleButtonWrapper}>
+                  {this.state.editMode ? (
+                    <Check2
+                      onClick={() => {
+                        this.saveEdits();
+                        this.setState({ editMode: false });
+                      }}
+                    />
+                  ) : (
+                    <PencilSquare
+                      onClick={() => this.setState({ editMode: true })}
+                    />
+                  )}
+                </button>
+                <button style={invisibleButtonWrapper}>
+                  {this.state.editMode ? (
+                    <TrashFill
+                      onClick={() => this.setState({ editMode: false })}
+                    />
+                  ) : (
+                    <XCircleFill
+                      onClick={() => this.props.handleRemoval(this.props.id)}
+                    />
+                  )}
+                </button>
               </div>
-              <div
-                className="mt-2"
-                style={{ display: "flex", justifyContent: "flex-start" }}
-              >
-                <div style={setting}>
-                  <p className="px-1" style={settingName}>
-                    Decay
-                  </p>
+            </div>
+            <div
+              className="mt-2"
+              style={{ display: "flex", justifyContent: "flex-start" }}
+            >
+              <div className="mr-1">
+                {this.state.editMode ? (
                   <input
-                    className="px-1"
+                    className="px-1 mr-1"
                     style={settingInput}
-                    placeholder={this.state.editMode ? "minutes" : undefined}
-                    value={
-                      this.state.editMode
-                        ? this.state.decayInput
-                        : this.props.data.decay
-                    }
+                    placeholder="Decay (minutes)"
+                    value={this.state.decayInput}
                     onChange={(e) =>
                       this.setState({ decayInput: e.target.value })
                     }
-                    disabled={!this.state.editMode}
                     type="number"
                     min="1"
                     max="999"
                   />
-                </div>
-                <div className="ml-1" style={setting}>
-                  <p className="px-1" style={settingName}>
-                    Regen
-                  </p>
+                ) : (
+                  <GradientLabel
+                    className="mr-1"
+                    label="Decay"
+                    value={this.props.data.decay}
+                    width="110px"
+                  />
+                )}
+              </div>
+              <div>
+                {this.state.editMode ? (
                   <input
                     className="px-1"
                     style={settingInput}
-                    placeholder={this.state.editMode ? "minutes" : undefined}
-                    value={
-                      this.state.editMode
-                        ? this.state.regenInput
-                        : this.props.data.regen
-                    }
+                    placeholder="Regen (minutes)"
+                    value={this.state.regenInput}
                     onChange={(e) =>
                       this.setState({ regenInput: e.target.value })
                     }
-                    disabled={!this.state.editMode}
                     type="number"
                     min="1"
                     max="999"
                   />
-                </div>
+                ) : (
+                  <GradientLabel
+                    label="Regen"
+                    value={this.props.data.regen}
+                    width="110px"
+                  />
+                )}
               </div>
-            </Card.Header>
-            <Accordion.Collapse eventKey="0">
-              <Card.Body>
-                {sites}
-                <form
-                  className="mt-3"
-                  onSubmit={this.addSite}
-                  style={{
-                    height: "25px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "16px",
-                  }}
-                >
-                  <input
-                    placeholder={"Add a website"}
-                    style={{ height: "100%" }}
-                    type="url"
-                    ref={this.myRef}
-                    value={this.state.addSiteInput}
-                    onChange={(e) => {
-                      this.setState({ addSiteInput: e.target.value });
-                    }}
-                  />
-                  <input
-                    type="image"
-                    style={{ height: "100%" }}
-                    src={require("../Resources/add1.png")}
-                    alt="submit"
-                  />
-                </form>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        </Accordion>
-      </div>
+            </div>
+          </Card.Header>
+          <Accordion.Collapse eventKey="0">
+            <Card.Body>
+              {this.props.data.bucketSites.map((site) => (
+                <BucketItem
+                  key={site}
+                  site={site}
+                  showRemove={this.state.editMode}
+                  handleRemoval={this.removeSite}
+                />
+              ))}
+              <AddSite
+              className="mt-2"
+                bucketID={this.props.id}
+                addToBucket={(site) =>
+                  this.edit(
+                    "bucketSites",
+                    this.props.data.bucketSites.concat(site)
+                  )
+                }
+              />
+            </Card.Body>
+          </Accordion.Collapse>
+        </Card>
+      </Accordion>
     );
   }
 }

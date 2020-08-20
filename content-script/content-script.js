@@ -1,16 +1,16 @@
 /*global chrome*/
-import * as utils from "../src/Util/utils";
-import * as storage from "../src/Util/storage";
+import * as functions from "../src/Utils/functions";
+import * as storage from "../src/Utils/storage";
 
 //Date object representing the start of the current session
 //A session is a period of time where the tab is visible, denoted by sessionStart and sessionEnd
 //sessionStart is undefined between sessions (e.g. when another tab is focused)
 let sessionStart;
 //URL of the site
-const site = utils.getSiteName(window.location.href);
+const site = functions.getSiteName(window.location.href);
 
 /**
- * wrapper for utils.isLastOpenTabInBucket, which can't be directly used since
+ * wrapper for functions.isLastOpenTabInBucket, which can't be directly used since
  * chrome.tabs can't be accessed in a content script
  *
  * @param {Number} bucketID
@@ -52,11 +52,11 @@ function attachOverlay() {
  * Sets everything up
  */
 async function setup() {
-  const bucketID = await utils.getBucketID(site);
+  const bucketID = await functions.getBucketID(site);
   // catches a strange case where addOverlay() activates when the extension is clicked on
   if (bucketID == null || site == null) return;
   sessionStart = new Date();
-  const bucket = await utils.getBucket(bucketID);
+  const bucket = await functions.getBucket(bucketID);
   const { decay, regen, lastActive } = bucket;
   let percentFaded = bucket.percentFaded;
   if (await isLastOpenTabInBucket(bucketID)) {
@@ -65,7 +65,7 @@ async function setup() {
     const minutesSinceLastActive = (Date.now() - lastActive) / (1000 * 60);
     const percentRegenerated = (minutesSinceLastActive / regen) * 100;
     percentFaded = Math.max(0, percentFaded - percentRegenerated);
-    await utils.updateBucket(bucketID, "percentFaded", percentFaded);
+    await functions.updateBucket(bucketID, "percentFaded", percentFaded);
   }
   attachOverlay();
   //rate at which the opacity is updated (in ms)
@@ -89,7 +89,7 @@ async function setup() {
   const tick = async () => {
     //always syncs with storage on each tick
     //when multiple tabs from the same bucket are open, you might lose a tick here and there
-    let storedPercentFaded = (await utils.getBucket(bucketID)).percentFaded;
+    let storedPercentFaded = (await functions.getBucket(bucketID)).percentFaded;
     percentFaded = storedPercentFaded + decayPerTick;
     if (percentFaded > 100) {
       percentFaded = 100;
@@ -98,7 +98,7 @@ async function setup() {
     if (decayToCombustAt != null && percentFaded > decayToCombustAt) {
       chrome.runtime.sendMessage({query: "close"})
     }
-    utils.updateBucket(bucketID, "percentFaded", percentFaded);
+    functions.updateBucket(bucketID, "percentFaded", percentFaded);
     document.getElementById("tint").style.opacity = percentFaded / 100;
     console.log(percentFaded);
   };
@@ -112,12 +112,13 @@ async function setup() {
       sessionStart = new Date();
     } else {
       clearInterval(ticker);
-      utils.endSession(sessionStart, site);
+      functions.endSession(sessionStart, site);
       sessionStart = undefined;
     }
   });
 
   window.onbeforeunload = () => {
+    if (sessionStart == null) return;
     //offloads cleanup code to background script
     chrome.runtime.sendMessage({
       query: "cleanup",

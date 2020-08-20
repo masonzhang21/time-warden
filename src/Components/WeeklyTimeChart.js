@@ -1,21 +1,20 @@
 import React from "react";
-import { Spinner } from "react-bootstrap";
 import { Bar } from "react-chartjs-2";
-import * as utils from "../Util/utils";
-export default function WeeklyScreenTimeGraph(props) {
-  if (props.times == null) {
-    return <Spinner animation="border" role="status"></Spinner>;
-  }
+import * as functions from "../Utils/functions";
 
+/**
+ * Component displaying a bar graph charting the amount of time spent on different sites during the past week
+ * @param {*} props 
+ */
+export default function WeeklyScreenTimeGraph(props) {
   //{0: {facebook.com: 32.4, instagram.com: 11}, 1: {}, ..., 6: {}} --> {facebook.com: {0: 32.4}, instagram.com: {0: 11}...},
-  const times = props.times;
   const timesBySite = {};
-  for (const day in times) {
-    for (const site in times[day]) {
+  for (const day in props.times) {
+    for (const site in props.times[day]) {
       if (timesBySite[site] == null) {
         timesBySite[site] = {};
       }
-      timesBySite[site][day] = times[day][site];
+      timesBySite[site][day] = props.times[day][site];
     }
   }
   //{facebook.com: {0: 32.4}, instagram.com: {0: 11}...} --> {facebook.com: [32.4, 0, 0, 0, 0, 0, 0], ...}
@@ -35,16 +34,12 @@ export default function WeeklyScreenTimeGraph(props) {
     const formattedGraphSite = {
       label: site,
       backgroundColor: randomColor,
-      //borderColor: "rgba(255,99,132,1)",
       borderWidth: 1,
       hoverBackgroundColor: randomColor,
-      //hoverBorderColor: "rgba(255,99,132,1)",
       data: timesBySite[site],
     };
     timesBySite[site] = formattedGraphSite;
   }
-
-
 
   const data = {
     labels: [
@@ -69,7 +64,7 @@ export default function WeeklyScreenTimeGraph(props) {
           if (label) {
             label += ": ";
           }
-          label += utils.formatMinutes(Number(tooltipItem.yLabel));
+          label += functions.formatMinutes(Number(tooltipItem.yLabel));
           return label;
         },
       },
@@ -86,8 +81,7 @@ export default function WeeklyScreenTimeGraph(props) {
           display: true,
           title: "LOL",
           ticks: {
-            // Include a dollar sign in the ticks
-            callback: utils.formatMinutes,
+            callback: functions.formatMinutes,
           },
         },
       ],

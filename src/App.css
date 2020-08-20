@@ -9,16 +9,12 @@ html, body, #root {
   height: 500px;
 }
 
+p {
+  margin: 0 !important;
+}
 .wh100 {
   width: 100%;
   height: 100%;
-}
-.nav-link.active {
-  background-color: #ffffff !important;
-  color: #1d3557 !important
-}
-.nav-link {
-  color: #eb9486 !important
 }
 
 input::-webkit-outer-spin-button,
@@ -30,4 +26,33 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+.btn-info.active, .btn-info:active {
+  background-color: #2f4858 !important
+}
+.btn-info {
+  background-color: #33658a !important
+}
+.btn-outline-info {
+  color: #33658a !important;
+  border-color: #33658a !important;
+
+}
+.btn-outline-info.active, .btn-outline-info:hover  {
+  color: #ffffff !important;
+  background-color: #33658a !important;
+}
+.nav-link.active {
+  background-color: #ffffff !important;
+  color: #2f4858 !important
+}
+.nav-link {
+  color: #f6ae2d !important
+}
+.btn-danger {
+  background-color: #eb0000 !important;
+}
+.popover {
+  max-width: none !important;
 }

@@ -3,7 +3,7 @@ import { defaultBucket, defaultWeek } from "./defaults";
 
 /**
  * Retrieves the value of a key
- * @param {String} key 
+ * @param {String} key
  */
 export function getData(key) {
   return new Promise((resolve) => {
@@ -21,7 +21,7 @@ export function getBuckets() {
   return new Promise((resolve) => {
     chrome.storage.sync.get("buckets", (response) => {
       if (Object.keys(response).length === 0) {
-        this.save("buckets", { 0: defaultBucket });
+        save("buckets", { 0: defaultBucket });
         resolve({ 0: defaultBucket });
       } else {
         resolve(response.buckets);
@@ -38,7 +38,7 @@ export function getSites() {
   return new Promise((resolve) => {
     chrome.storage.sync.get("sites", (response) => {
       if (Object.keys(response).length === 0) {
-        this.save("sites", {});
+        save("sites", {});
         resolve({});
       } else {
         resolve(response.sites);
@@ -63,10 +63,10 @@ export function getTimes() {
         const defaultTimes = {
           thisWeek: defaultWeek,
           lastWeek: defaultWeek,
-          timestamp: lastSunday,
+          timestamp: lastSunday.toJSON(),
         };
-        this.save("times", defaultTimes);
-        resolve({ defaultTimes });
+        save("times", defaultTimes);
+        resolve(defaultTimes);
       } else {
         resolve(response.times);
       }
@@ -75,7 +75,7 @@ export function getTimes() {
 }
 
 /**
- * Retrieves the options, 
+ * Retrieves the options,
  * e.g. {spontaneousCombustion: false, ...}
  */
 export function getOptions() {
@@ -85,7 +85,7 @@ export function getOptions() {
         const defaultOptions = {
           spontaneousCombustion: false,
         };
-        this.save("options", defaultOptions);
+        save("options", defaultOptions);
         resolve(defaultOptions);
       } else {
         resolve(response.options);

@@ -1,7 +1,7 @@
 export const defaultBucket = {
     name: "Default Bucket",
-    decay: 30,
-    regen: 30,
+    decay: 15,
+    regen: 15,
     bucketSites: [],
     percentFaded: 0,
     lastActive: 0

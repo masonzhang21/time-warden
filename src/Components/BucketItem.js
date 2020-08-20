@@ -1,7 +1,19 @@
 import React from "react";
 import Site from "./Site"
 import { Button } from "react-bootstrap";
-
+import {
+  ArrowBarDown,
+  ArrowBarUp,
+  Check2,
+  PencilSquare,
+  TrashFill,
+  XCircleFill,
+  FilePlus,
+} from "react-bootstrap-icons";
+/**
+ * Component displaying a bucket's site and a way to delete it in edit mode
+ * @param {*} props 
+ */
 export default function BucketItem(props) {
   const site = {
     display: "flex",
@@ -11,19 +23,24 @@ export default function BucketItem(props) {
     fontSize: "20px",
     height: "25px"
   };
+  const invisibleButtonWrapper = {
+    border: 0,
+    margin: 0,
+    padding: 0,
+    backgroundColor: "transparent",
+  };
 
   return (
     <div className="my-2" style={site}>
       <Site site={props.site}/>
-      <Button variant="link" style={{ margin: 0, padding: 0, height: "100%" }}>
-        {props.showRemove && <img
-          src={require("../Resources/remove.png")}
-          alt=""
+      <button style={invisibleButtonWrapper}>
+        {props.showRemove && <XCircleFill
+          alt="remove"
           draggable="false"
           style={{ height: "100%" }}
           onClick={() => props.handleRemoval(props.site)}
         />}
-      </Button>
+      </button>
     </div>
   );
 }

@@ -150,7 +150,8 @@ export async function addTime(minutes, site, date) {
 
   let times = await storage.getTimes();
   const lastSunday = new Date(times.timestamp);
-  const nextSunday = lastSunday.setDate(lastSunday.getDate() + 7);
+  const nextSunday = new Date(lastSunday);
+  nextSunday.setDate(nextSunday.getDate() + 7);
   if (!(lastSunday < date < nextSunday)) {
     await this.newWeek();
     times = await storage.getTimes();
