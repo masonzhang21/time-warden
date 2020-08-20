@@ -3,7 +3,7 @@ import * as storage from "../Utils/storage";
 import * as functions from "../Utils/functions";
 import { ToggleButtonGroup, ToggleButton, Spinner } from "react-bootstrap";
 import WeeklyTimeChart from "../Components/WeeklyTimeChart";
-import DailyScreenTimeList from "../Components/DailyTimeList";
+import DailyTimeList from "../Components/DailyTimeList";
 import GradientLabel from "../Components/GradientLabel";
 import * as constants from "../Utils/constants";
 
@@ -66,7 +66,7 @@ export class ScreenTime extends Component {
       display: "flex",
       flexDirection: "row",
       justifyContent: "space-between",
-      alignItems: "center"
+      alignItems: "center",
     };
 
     const lightGrayContainer = {
@@ -117,21 +117,24 @@ export class ScreenTime extends Component {
             </ToggleButton>
           </ToggleButtonGroup>
         </div>
-        <hr style={{border: `1px solid ${constants.darkBlue}`, width: "95%"}}></hr>
+        <hr
+          style={{ border: `1px solid ${constants.darkBlue}`, width: "95%" }}
+        ></hr>
         <div className="mt-1 mb-3" style={header}>
           <h1 style={{ fontFamily: "Rowdies, cursive" }}>Today</h1>
           <GradientLabel
             label={"Daily Total"}
             value={
               isReady &&
-              functions.formatMinutes(this.calculateDailyTotal(this.state.times))
+              functions.formatMinutes(
+                this.calculateDailyTotal(this.state.times)
+              )
             }
           />
         </div>
-        <div style={lightGrayContainer}>{screenTimeToday && (
-          <DailyScreenTimeList screenTime={screenTimeToday} />
-        )}</div>
-        
+        <div style={lightGrayContainer}>
+          {screenTimeToday && <DailyTimeList screenTime={screenTimeToday} />}
+        </div>
       </div>
     );
   }

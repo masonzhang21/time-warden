@@ -36,7 +36,7 @@ function App() {
       </Tabs>
       <div
         className="wh100"
-        style={{ backgroundColor: Constants.white, overflow: "auto" }}
+        style={{ backgroundColor: "white", overflow: "auto" }}
       >
         {tab === "home" && <Home />}
         {tab === "config" && <Config />}

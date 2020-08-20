@@ -75,7 +75,6 @@ export class Bucket extends Component {
     const potentialSite = functions.getSiteName(
       "https://" + this.state.addSiteInput
     );
-    console.log(potentialSite);
     if (!(potentialSite in watchedSites)) {
       this.edit(
         "bucketSites",
@@ -264,7 +263,6 @@ export class Bucket extends Component {
                 />
               ))}
               <AddSite
-              className="mt-2"
                 bucketID={this.props.id}
                 addToBucket={(site) =>
                   this.edit(

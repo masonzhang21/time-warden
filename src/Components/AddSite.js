@@ -40,8 +40,8 @@ export class AddSite extends Component {
     }
   };
 
-  //not a very good regex
-  URLPattern = "^[^\s/$.?#]+\.[^\s]+$";
+  //not a very good regex, but it mostly does the job!
+  URLPattern = "^[^\\s\\/$.?#]+\\.[a-z]{2,}$";
 
   render() {
     return (
@@ -52,7 +52,7 @@ export class AddSite extends Component {
         style={{
           display: "flex",
           marginBottom: 0,
-          marginTop: "20px",
+          marginTop: "30px",
           justifyContent: "space-between",
         }}
       >

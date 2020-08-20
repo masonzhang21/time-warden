@@ -5,7 +5,6 @@ import * as storage from "../Utils/storage";
 import { Button, Spinner, Popover, OverlayTrigger } from "react-bootstrap";
 import { InfoCircle } from "react-bootstrap-icons";
 import Switch from "react-switch";
-import { defaultBucket } from "../Utils/defaults";
 import * as constants from "../Utils/constants";
 
 export class Config extends Component {
@@ -77,7 +76,7 @@ export class Config extends Component {
     const bucketId = bucketKeys.length === 0 ? 0 : Number(bucketKeys.pop()) + 1;
     storage.save("buckets", {
       ...this.state.buckets,
-      [bucketId]: defaultBucket,
+      [bucketId]: constants.defaultBucket,
     });
   };
 

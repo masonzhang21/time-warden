@@ -1,6 +1,6 @@
 {
   "name": "Time Warden",
-  "version": "1.0",
+  "version": "1.0.0",
   "manifest_version": 2,
   "browser_action": {
     "default_popup": "index.html",
@@ -14,8 +14,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "storage", "tabs", "webNavigation", "activeTab", "http://*/",
-    "https://*/"
+    "storage", "tabs", "webNavigation", "http://*/", "https://*/"
   ],
   "icons": { 
     "16": "logo16.png",

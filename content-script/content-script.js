@@ -85,7 +85,6 @@ async function setup() {
   } else {
     decayToCombustAt = undefined;
   }
-  console.log(shouldCombust, chanceOfCombustion, decayToCombustAt, Math.random())
   const tick = async () => {
     //always syncs with storage on each tick
     //when multiple tabs from the same bucket are open, you might lose a tick here and there
@@ -100,7 +99,6 @@ async function setup() {
     }
     functions.updateBucket(bucketID, "percentFaded", percentFaded);
     document.getElementById("tint").style.opacity = percentFaded / 100;
-    console.log(percentFaded);
   };
   let ticker = setInterval(tick, tickFrequency);
 

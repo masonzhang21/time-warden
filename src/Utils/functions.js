@@ -1,7 +1,7 @@
 /*global chrome*/
 
 import * as storage from "./storage";
-import { defaultWeek } from "./defaults";
+import { defaultWeek } from "./constants";
 
 /**
  * Returns the active tab in the current window
@@ -51,7 +51,7 @@ export async function getOpenWatchedSites() {
  */
 export async function isWatchedSite(site) {
   const watchedSites = await Object.keys(await storage.getSites());
-  site = this.getSiteName(site);
+  site = getSiteName(site);
   return watchedSites.includes(site);
 }
 
@@ -103,10 +103,10 @@ export async function updateBucket(id, key, value) {
  * @param {Number} id The bucket whose open sites we're counting
  */
 export async function numOpenTabsInBucket(id) {
-  const { bucketSites } = await this.getBucket(id);
+  const { bucketSites } = await getBucket(id);
   const openTabs = await getOpenTabs();
   const tabsInBucket = openTabs.filter((tab) =>
-    bucketSites.includes(this.getSiteName(tab.url))
+    bucketSites.includes(getSiteName(tab.url))
   );
   return tabsInBucket.length;
 }
@@ -118,7 +118,7 @@ export async function numOpenTabsInBucket(id) {
  * @param {Number} bucketID
  */
 export async function isLastOpenTabInBucket(bucketID) {
-  const numOpen = await this.numOpenTabsInBucket(bucketID);
+  const numOpen = await numOpenTabsInBucket(bucketID);
   return numOpen <= 1;
 }
 
@@ -153,7 +153,7 @@ export async function addTime(minutes, site, date) {
   const nextSunday = new Date(lastSunday);
   nextSunday.setDate(nextSunday.getDate() + 7);
   if (!(lastSunday < date < nextSunday)) {
-    await this.newWeek();
+    await newWeek();
     times = await storage.getTimes();
   }
   //total time spent on this site this week
@@ -190,18 +190,18 @@ export async function endSession(sessionStart, site) {
   if (sessionStart == null) return;
 
   const sessionEnd = new Date();
-  if (!this.isSameDay(sessionStart, sessionEnd)) {
+  if (!isSameDay(sessionStart, sessionEnd)) {
     /* if the session spans two different days (ex: 11:55pm-12:05am),
     add 5 minutes to the previous day and set sessionStart to midnight of the new day.
     this way, sessionStart and sessionEnd are guaranteed to be on the same date. */
     const midnight = new Date(sessionEnd.getTime());
     midnight.setHours(0, 0, 0, 0);
     const minutesOnPreviousDay = (midnight - sessionStart) / 1000 / 60;
-    this.addTime(minutesOnPreviousDay, site, sessionStart);
+    addTime(minutesOnPreviousDay, site, sessionStart);
     sessionStart = midnight;
   }
   const elapsedMinutes = (sessionEnd - sessionStart) / 1000 / 60;
-  this.addTime(elapsedMinutes, site, sessionEnd);
+  addTime(elapsedMinutes, site, sessionEnd);
 }
 
 /**
@@ -221,7 +221,6 @@ export async function lockAllWatchedSites() {
     buckets[bucketID]["percentFaded"] = 100;
     buckets[bucketID]["lastActive"] = Date.now();
   }
-  console.log(buckets);
   storage.save("buckets", buckets);
 }
 

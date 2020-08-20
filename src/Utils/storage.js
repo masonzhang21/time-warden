@@ -1,5 +1,5 @@
 /*global chrome*/
-import { defaultBucket, defaultWeek } from "./defaults";
+import { defaultBucket, defaultWeek } from "./constants";
 
 /**
  * Retrieves the value of a key

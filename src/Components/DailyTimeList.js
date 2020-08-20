@@ -27,7 +27,6 @@ export default function DailyScreenTimeList(props) {
     siteTimes[i] = siteTime;
   }
   //siteTimes is now [[facebook.com, 12.22, 100], [instagram.com, 1.44, 13]]
-
   return (
     <div className="my-3" style={container}>
       {siteTimes.map((screenTime) => (

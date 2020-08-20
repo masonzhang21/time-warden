@@ -3,8 +3,8 @@ import Site from "./Site";
 import * as constants from "../Utils/constants";
 
 /**
- * Component displaying a site and the time spent on it, with a bar filled to a percentage 
- * proportional to the site with the most time spent 
+ * Component displaying a site and the time spent on it, with a bar filled to a percentage
+ * proportional to the site with the most time spent
  * @param {*} props
  */
 export default function SiteTime(props) {
@@ -12,7 +12,7 @@ export default function SiteTime(props) {
     width: "100%",
     backgroundImage: `linear-gradient(to right, ${constants.gold} ${
       props.percent
-    }%, #ffffff ${1 - props.percent}%)`,
+    }%, white ${1 - props.percent}%)`,
     height: "36px",
     fontSize: "18px",
     padding: "3px",
@@ -23,9 +23,12 @@ export default function SiteTime(props) {
     justifyContent: "space-between",
   };
   if (props.first) {
-    bar.borderRadius = "5px 5px 0 0";
-  } else if (props.last) {
-    bar.borderRadius = "0 0 5px 5px";
+    bar.borderTopLeftRadius = "5px"
+    bar.borderTopRightRadius = "5px"
+  }
+  if (props.last) {
+    bar.borderBottomLeftRadius = "5px";
+    bar.borderBottomRightRadius = "5px";
   }
 
   return (

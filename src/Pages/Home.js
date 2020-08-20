@@ -69,8 +69,8 @@ export class Home extends Component {
           draggable="false"
           style={{ height: "100px" }}
         />
-        <p style={{ fontSize: "24px" }}>THE TIME WARDEN IS WATCHING YOU</p>
-        <p style={{ fontSize: "20px" }}>...and she's dissapointed.</p>
+        <p style={{ fontSize: "26px" }}>THE TIME WARDEN IS WATCHING YOU</p>
+        <p style={{ fontSize: "18px" }}>...and she's dissapointed.</p>
 
         <Button
           className="mt-4"
@@ -131,8 +131,8 @@ export class Home extends Component {
           draggable="false"
           style={{ height: "100px" }}
         />
-        <p style={{ fontSize: "24px" }}>THE TIME WARDEN IS WATCHING YOU</p>
-        <p style={{ fontSize: "20px" }}>
+        <p style={{ fontSize: "26px" }}>THE TIME WARDEN IS WATCHING YOU</p>
+        <p style={{ fontSize: "18px" }}>
           {this.state.blackoutInitiated
             ? "...and she's so proud!"
             : "...and she wants you to click the button."}

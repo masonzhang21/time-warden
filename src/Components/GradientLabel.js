@@ -1,5 +1,5 @@
 import React from "react";
-
+import {gold, orange} from "../Utils/constants"
 /**
  * Displays a property and its value with a gradient background
  * @param {*} props 
@@ -8,7 +8,7 @@ export default function GradientLabel(props) {
   const container = {
     display: "flex",
     alignItems: "center",
-    backgroundImage: "linear-gradient(to right, #f6ae2d, #f26419)",
+    backgroundImage: `linear-gradient(to right, ${gold}, ${orange})`,
     borderRadius: "5px",
     padding: "5px",
     whiteSpace: "nowrap",
