@@ -1,6 +1,6 @@
 <p align="center"><img src="./app/assets/images/leewaylogo2.png" width=250px/></p>
 
-<h1 align="center">Leeway</h1>
+<h1 align="center">Time Warden</h1>
 
 <p align="center">
   <a href="#technologies">Technologies</a> •
