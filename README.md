@@ -1,10 +1,9 @@
-<style> a:link {color: gold} </style>
 <p align="center"><img src="./assets/banner1400.jpg" width=700px/></p>
 
 <h1 align="center">Time Warden</h1>
 
 <p align="center">
-  <a href="#technologies">Technologies</a> •
+  <a color="gold" href="#technologies">Technologies</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#project-design">Project Design</a> •
   <a href="#additional-resources">Additional Resources</a> •
