@@ -10,24 +10,22 @@
   <a href="#pending-features">Pending Features</a>
 </p>
 
-<p align="center">A Chrome extension designed to limit screen time on distracting sites by gradually fading them away. </p>
+<p align="center">A Chrome extension designed to limit screen time on distracting sites by slowly fading them away as you spend time on them. It's highly customizable and keeps track of the time you spend on watched sites every day.</p>
 
 <p align="center"><img src="./assets/fading.jpg"  width=1000px/></p>
-Note: this project was designed and built within a two-week time frame, though I intend to add enhancements over time.
+Get the extension <a href="https://chrome.google.com/webstore/detail/time-warden/hgfgbklancihgfpjaagdmhplaoklgeol?hl=en">here</a> on the Chrome Web Store!
 
 ## Technologies
-- Websockets: ActionCable
-- Ruby on Rails
 - React
-- Redux
-- Postgresql Database
-- Amazon Web Services for profile pictures
+- Javascript
 
 ## Key Features
-- Secure frontend to backend user authentication using BCrypt
-- Users can create channels or direct messages, and read those they have permission to
-- Users can create, read, update, and delete messages in those chats
-- Message feed dynamically updates to display all messages within that chat
+- Group sites into buckets and customize how long it takes for sites in a bucket to fade away/regenerate
+- Sites in the same bucket fade away together and come back together
+- 'Watched' sites will gradually fade to black while they remain the active tab
+- 'Watched' sites will slowly regenerate when closed
+- Screen time tracker that graphs time spent on watched sites
+- A couple more buttons and switches that do cool things!
 
 ### Live Chat
 
