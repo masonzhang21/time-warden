@@ -1,4 +1,4 @@
-<p align="center"><img src="./assets/banner1400.jpg" width=400px/></p>
+<p align="center"><img src="./assets/banner1400.jpg" width=1400px/></p>
 
 <h1 align="center">Time Warden</h1>
 
