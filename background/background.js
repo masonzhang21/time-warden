@@ -15,7 +15,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.browserAction.setBadgeBackgroundColor({ color: "green" });
       }
     });
-    functions.endSession(new Date(request.sessionStart), request.site);
+    //if sessionStart key exists (i.e. the user closed the page while on the page)
+    if (request.sessionStart) {
+      functions.endSession(new Date(request.sessionStart), request.site);
+    }
   } else if (request.query === "close") {
     //closes the tab
     chrome.tabs.remove(sender.tab.id);
@@ -28,7 +31,7 @@ chrome.webNavigation.onCompleted.addListener(async function (details) {
   const isMainTab = details.frameId === 0 && details.parentFrameId === -1;
   const isWatchedSite = await functions.isWatchedSite(details.url);
   if (isMainTab && isWatchedSite) {
-    chrome.tabs.executeScript({
+    chrome.tabs.executeScript(details.tabId, {
       file: "content-script.js",
     });
     chrome.browserAction.setBadgeText({ text: "BAD" });

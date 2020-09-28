@@ -8,7 +8,6 @@ import * as storage from "../src/Utils/storage";
 let sessionStart;
 //URL of the site
 const site = functions.getSiteName(window.location.href);
-
 /**
  * wrapper for functions.isLastOpenTabInBucket, which can't be directly used since
  * chrome.tabs can't be accessed in a content script
@@ -112,18 +111,19 @@ async function setup() {
     } else {
       clearInterval(ticker);
       functions.endSession(sessionStart, site);
-      sessionStart = undefined;
+      sessionStart = null;
     }
   });
 
   window.onbeforeunload = () => {
-    if (sessionStart == null) return;
+    //catches weird bugs
+    if (sessionStart === undefined) return;
     //offloads cleanup code to background script
     chrome.runtime.sendMessage({
       query: "cleanup",
       bucketID: bucketID,
       site: site,
-      sessionStart: sessionStart.toJSON(),
+      ...(sessionStart && { sessionStart: sessionStart }) //only include sessionStart key if sessionStart is defined
     });
   };
 }

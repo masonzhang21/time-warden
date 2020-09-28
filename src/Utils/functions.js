@@ -172,10 +172,10 @@ export async function newWeek() {
   //resets thisWeek's records
   times.thisWeek = defaultWeek;
   //update timestamp to the start of this week
-  const timestamp = new Date(times.timestamp);
+  let timestamp = new Date(times.timestamp);
   timestamp.setDate(timestamp.getDate() + 7);
   times.timestamp = timestamp.toJSON();
-  await storage.save(times);
+  await storage.save("times", times);
 }
 
 /**
