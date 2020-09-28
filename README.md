@@ -12,7 +12,7 @@
 
 <p align="center">A Chrome extension designed to limit screen time on distracting sites by gradually fading them away. </p>
 
-<p align="center"><img src="./assets/fading.jpg"  width=650px/></p>
+<p align="center"><img src="./assets/fading.jpg"  width=1000px/></p>
 Note: this project was designed and built within a two-week time frame, though I intend to add enhancements over time.
 
 ## Technologies
