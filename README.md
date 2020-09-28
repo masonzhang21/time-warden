@@ -3,7 +3,7 @@
 <h1 align="center">Time Warden</h1>
 
 <p align="center">
-  <a color="yellow" href="#technologies">Technologies</a> •
+  <a href="#technologies">Technologies</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#project-design">Project Design</a> •
   <a href="#additional-resources">Additional Resources</a> •
