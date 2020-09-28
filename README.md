@@ -1,3 +1,4 @@
+<style> .a:link {color: gold} </style>
 <p align="center"><img src="./assets/banner1400.jpg" width=700px/></p>
 
 <h1 align="center">Time Warden</h1>
