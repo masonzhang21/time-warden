@@ -36,13 +36,15 @@ Buckets are containers for sites. You can place any
           in the same bucket are synced - spending time on one will cause all to
           fade away. Use them to customize how long you're allowed to spend on
           different sites.
-          Each bucket has a decay rate and regeneration rate. The decay rate
+          
+Each bucket has a decay rate and regeneration rate. The decay rate
           determines how fast time runs out, while the regeneration rate
           determines how fast you get time back. A decay rate of 10 means that
           you can spend 10 minutes on the sites in the bucket before they fully fade away. A
           regen rate of 10 means that you need to wait 10 minutes for a fully faded site
           to completely unfade.
-          Note that sites only decay when they're the active tab, and sites only
+          
+Note that sites only decay when they're the active tab, and sites only
           regen while when every tab in the bucket is closed. If a site in a
           bucket is open but not the active tab, it's in limbo. Note that a site can only be in a single bucket.
 
