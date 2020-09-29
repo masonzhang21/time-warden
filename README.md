@@ -29,7 +29,7 @@ Get the extension <a href="https://chrome.google.com/webstore/detail/time-warden
 
 ### Buckets
 
-<img src="./assets/buckets.png" width=800px/>
+<img src="./assets/buckets.png" width=150px/>
 
 Buckets are containers for sites. You can place any
           number of sites in the same bucket, and they'll share time. All sites
