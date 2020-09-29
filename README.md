@@ -6,7 +6,7 @@
   <a href="#technologies">Technologies</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#project-design">Project Design</a> •
-  <a href="#building-project">Building the project</a> •
+  <a href="#building-the-project">Building the project</a> •
   <a href="#pending-features">Pending Features</a>
 </p>
 
