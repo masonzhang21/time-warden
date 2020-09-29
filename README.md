@@ -13,7 +13,7 @@
 <p align="center">A Chrome extension designed to limit screen time on distracting sites by slowly fading them away as you spend time on them. It's highly customizable and also keeps track of your screen time.</p>
 
 <p align="center"><img src="./assets/fadingsite.jpg"  width=1000px/></p>
-Get the extension <a href="https://chrome.google.com/webstore/detail/time-warden/hgfgbklancihgfpjaagdmhplaoklgeol?hl=en">here</a> on the Chrome Web Store!
+<p align="center" Get the extension <a href="https://chrome.google.com/webstore/detail/time-warden/hgfgbklancihgfpjaagdmhplaoklgeol?hl=en">here</a> on the Chrome Web Store! </p>
 
 ## Technologies
 - React
