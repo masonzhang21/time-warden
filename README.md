@@ -6,13 +6,13 @@
   <a href="#technologies">Technologies</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#project-design">Project Design</a> •
-  <a href="#additional-resources">Additional Resources</a> •
+  <a href="#building-project">Building the project</a> •
   <a href="#pending-features">Pending Features</a>
 </p>
 
-<p align="center">A Chrome extension designed to limit screen time on distracting sites by slowly fading them away as you spend time on them. It's highly customizable and keeps track of the time you spend on watched sites every day.</p>
+<p align="center">A Chrome extension designed to limit screen time on distracting sites by slowly fading them away as you spend time on them. It's highly customizable and also keeps track of your screen time.</p>
 
-<p align="center"><img src="./assets/fading.jpg"  width=1000px/></p>
+<p align="center"><img src="./assets/fadingsite.jpg"  width=1000px/></p>
 Get the extension <a href="https://chrome.google.com/webstore/detail/time-warden/hgfgbklancihgfpjaagdmhplaoklgeol?hl=en">here</a> on the Chrome Web Store!
 
 ## Technologies
@@ -27,115 +27,76 @@ Get the extension <a href="https://chrome.google.com/webstore/detail/time-warden
 - Screen time tracker that graphs time spent on watched sites
 - A couple more buttons and switches that do cool things!
 
-### Live Chat
+### Buckets
 
-<img src="./app/assets/images/demos/livemessagedemo.gif" width=800px/>
+<img src="./assets/buckets.jpg" width=800px/>
 
-Leeway utilizes ActionCable, a WebSocket framework for Rails, allowing open connections for real-time server communication.
+Buckets are containers for sites. You can place any
+          number of sites in the same bucket, and they'll share time. All sites
+          in the same bucket are synced - spending time on one will cause all to
+          fade away. Use them to customize how long you're allowed to spend on
+          different sites.
+          Each bucket has a decay rate and regeneration rate. The decay rate
+          determines how fast time runs out, while the regeneration rate
+          determines how fast you get time back. A decay rate of 10 means that
+          you can spend 10 minutes on the sites in the bucket before they fully fade away. A
+          regen rate of 10 means that you need to wait 10 minutes for a fully faded site
+          to completely unfade.
+          Note that sites only decay when they're the active tab, and sites only
+          regen while when every tab in the bucket is closed. If a site in a
+          bucket is open but not the active tab, it's in limbo. Note that a site can only be in a single bucket.
 
-```js
-// frontend/components/message/message_feed.jsx
-createSocket(channelId) {
-  const cable = Cable.createConsumer('wss://leewayapp.herokuapp.com/cable');
-  this.chats = cable.subscriptions.create(
-    { channel: "MessagesChannel", messageable_id: channelId },
-    {
-      received: (data) => {
-        data.messageable_id = channelId;
-        this.props.receiveMessage(data);
-      }
+### Spontaneous Combustion
+
+If turned on, watched sites (sites in a bucket) will randomly close (with a greater and greater chance the more the site fades away).
+
+### Operation: Total Blackout
+
+If no watched sites are open in any Chrome tab, the extension badge will change green and the <i> Operation: Total Blackout </i> button will be shown on the Home page. Pressing this fully fades away all sites in all buckets. But have no fear, for they'll naturally regenerate back at the set regeneration rate for the bucket they're in. 
+
+### Operation: Destroy Evil
+
+If a watched site is open in any Chrome tab, the extension badge will change red and the <i> Operation: Destroy Evil </i> button will be shown on the Home page. Pressing this closes all watched sites. 
+
+### Screen time
+
+Time Warden keeps track of the time spent on watched sites and plots weekly screen times on a stacked bar chart. Time is accumulated when a watched site is focused (i.e. when ```document.visibilityState === "visible"```). It also calculates the average time spent per week and the total time spent today. The daily tracker resets at midnight local time, whereas the weekly tracker resets on Sunday at midnight.
+
+
+## Project Design and Organization
+
+### Backend
+The primary aim of Time Warden was to fade-to-black user designated sites over a configurable period of time. To accomplish this, we use a background script that listens to web navigation events. If the user navigates to a page with the same domain name as a watched site, a content script is injected into the newly loaded site. 
+```
+chrome.webNavigation.onCompleted.addListener(async function (details) {
+  const isMainTab = details.frameId === 0 && details.parentFrameId === -1;
+  const isWatchedSite = await functions.isWatchedSite(details.url);
+  if (isMainTab && isWatchedSite) {
+    chrome.tabs.executeScript(details.tabId, {
+      file: "content-script.js",
     });
-}
-```
-
-On the backend, streams are dynamically created using params sent from the frontend MessageFeed:
-```rb
-# app/channels/messages_channel.rb
-def subscribed
-  stream_from "chat-#{params['messageable_id']}:messages"
-end
-```
-
-Messages are also broadcasted to all users who are subscribed to the specified channel:
-```rb
-# app/models/message.rb
-after_create_commit do
-  ActionCable.server.broadcast "chat-#{messageable_id}:messages",
-    id: id,
-    body: body,
-    author_id: author_id,
-    author: author.format_username,
-    messageable_type: messageable_type,
-    timestamp: created_at.strftime("%-I:%M %p")
-end
-```
-
-### Channel and Direct Message Creation
-<img src="./app/assets/images/demos/dmcreationdemo.gif" width=750px/>
-
-The direct message create form is more complex than that for channel, because it involves a user search.
-
-After rendering only the users that match the search query, clicking a username adds it to the list of members for that dm. Clicking it again will remove it from that list:
-
-```js
-clickUsername(userId) {
-  return e => {
-    e.preventDefault();
-
-    const user = this.props.allUsers[userId];
-    let oldUsers = this.state.selectedUsers;
-
-    //if username is not selected yet
-    if( this.state.selectedUsers[userId] === undefined ) {
-      oldUsers[userId] = {user};
-      this.setState( {selectedUsers: oldUsers} );
-    } else {
-      delete oldUsers[userId];
-      this.setState( {selectedUsers: oldUsers} );
-    }
-  };
-}
-```
-After clicking the create button for either form, permissions to access that chat are created for the current user and all selected users, in the case of dm's.
-
-### Message Editing and Deletion
-
-<img src="./app/assets/images/demos/messagecruddemo.gif" width=800px/>
-
-The edit and delete buttons for a message to be conditionally visible when the user hovers over the message. A check for if the current user is the author of the message is conducted:
-```js
-showEditDelete() {
-  if( this.props.currentUserId === this.props.message.author_id && !this.state.editing ) {
-    this.setState( {visible: true} );
   }
-}
+});
 ```
-The edit button (the delete button is very similar):
-```js
-<button
-  className={ `edit-message-button-${this.state.visible}` }
-  onClick={ this.handleEditClick() }>
-  &#x270E;
-</button>
-```
-Upon click of the edit button, an edit form is rendered where the message was.
+The content script initializes the state of the page (including the initial percentFaded value) from storage. It listens to when `document.visibilityState` changes and adds a timer that ticks once per second when the page is active. Every second, the timer increases the opacity of a 100vw/100vh overlay attached to the DOM. The content script also handles the storing the state of the page when the window is unloaded.  
 
-## Project Design
-Considering the two-week time period, the aim was for Leeway to mirror was a core set of Slack's features.
+Functions involving reading/writing to/from `chrome.storage.sync` are located in `storage.js`. Most program logic can be found in functions in `functions.js`. 
 
-Regarding the schema, messages were initially going to polymorphically belong to both channels and direct messages. However, because of the considerable overlap in functionality of channels and direct messages, channels have a boolean ```is_dm``` column to designate some as direct messages.
+### Frontend
+The extension UI is built with React. 
 
-## Additional Resources
-- [Database Schema](https://github.com/aguamenti/Leeway/wiki/Database-Schema)
-- [API Endpoints](https://github.com/aguamenti/Leeway/wiki/Backend-Routes)
+### Assets
+Assets used in the Chrome Extension Store listing are located in the `assets` folder. Logos used in the extension itself are located in `public`.
+
+### Manifest
+The `manifest.json` for the extension is located in `public`. The `"https://*/*"` permission is needed. Time Warden assumes that all watched sites have the `https` protocol. 
+
+## Building the Project
+This project was bootstrapped with the following [live reloading for React Chrome Extensions kit](https://github.com/hk-skit/chrome-extension-starter-kit), which, as the name suggests, provides live reloading while developing Chrome Extensions. To start, run `npm run build` and load the `build` folder as the unpacked extension. Then run `npm run watch`. 
+
+The extension is the zipped `build` folder. 
 
 ## Pending Features
-- Channel/direct message edit and delete
-- Message search
-- User profiles show and edit
-
-
-Time Warden - A Chrome Extension that keeps distracting sites away!
-
-Bootstrapped with https://github.com/hk-skit/chrome-extension-starter-kit
-https://chrome.google.com/webstore/detail/time-warden/hgfgbklancihgfpjaagdmhplaoklgeol?hl=en
+- Configurable 'cooldown' period during which the closed watched site doesn't start regenerating
+- Different images/colors to fade to
+- Let friends keep tabs on each other. Get a notification when a friend is on a watched site, and have the ability to send a 'shame' notification that flashes on their screen. 
