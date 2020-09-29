@@ -94,7 +94,7 @@ Assets used in the Chrome Extension Store listing are located in the `assets` fo
 The `manifest.json` for the extension is located in `public`. The `"https://*/*"` permission is needed. Time Warden assumes that all watched sites have the `https` protocol. 
 
 ## Building the Project
-This project was bootstrapped with the following [live reloading for React Chrome Extensions kit](https://github.com/hk-skit/chrome-extension-starter-kit), which, as the name suggests, provides live reloading while developing Chrome Extensions. To start, run `npm run build` and load the `build` folder as the unpacked extension. Then run `npm run watch`. 
+This project was bootstrapped with the following [live reloading for React Chrome Extensions kit](https://github.com/hk-skit/chrome-extension-starter-kit), which, as the name suggests, provides live reloading while developing Chrome Extensions. To start, run `npm run build` and load the `build` folder as the unpacked extension. Then run `npm run watch`. Any changes made will now instantly take into effect!
 
 The extension is the zipped `build` folder. 
 
